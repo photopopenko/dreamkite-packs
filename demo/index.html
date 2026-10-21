@@ -1,0 +1,672 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"></head><body style="margin:0">
+<title>Stitch Atelier</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400..700;1,400..700&family=Poppins:wght@400;500;700&display=swap"><style>:root{--f-display:"Lora",Georgia,serif!important;--f-body:"Poppins","Segoe UI",system-ui,sans-serif!important}</style>
+<style>
+/* Layout: studio workbench — slim top bar, settings rail on the left, a large stage holding the stitched piece; rail stacks above the stage on phones. */
+:root{
+  --bg:#eef0ee; --rail:#fbfbfa; --stage:#e6e8e5; --card:#ffffff; --ink:#1f2430; --ink-2:#4a5060; --muted:#7a8090;
+  --line:#dfe2df; --line-2:#cfd3cf; --accent:#a3243b; --accent-ink:#ffffff; --accent-soft:#f6e6e9; --gold:#b08a46; --ok:#2f7a5b;
+  --shadow:0 1px 2px rgba(20,24,32,.06),0 8px 24px -12px rgba(20,24,32,.18);
+  --f-display:"SA Display",Georgia,"Times New Roman",serif;
+  --f-body:"SA Sans","Segoe UI",system-ui,-apple-system,sans-serif;
+  --f-mono:ui-monospace,"SF Mono",Menlo,Consolas,"DejaVu Sans Mono",monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#121418; --rail:#181b21; --stage:#0e1013; --card:#1e222a; --ink:#ecedf0; --ink-2:#c3c7d0; --muted:#8d93a1;
+  --line:#2a2f38; --line-2:#363c47; --accent:#e0566f; --accent-ink:#1a0c10; --accent-soft:#3a1c23; --gold:#d3ad69; --ok:#5cc296;
+  --shadow:0 1px 2px rgba(0,0,0,.4),0 10px 30px -14px rgba(0,0,0,.7); color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#121418; --rail:#181b21; --stage:#0e1013; --card:#1e222a; --ink:#ecedf0; --ink-2:#c3c7d0; --muted:#8d93a1;
+  --line:#2a2f38; --line-2:#363c47; --accent:#e0566f; --accent-ink:#1a0c10; --accent-soft:#3a1c23; --gold:#d3ad69; --ok:#5cc296;
+  --shadow:0 1px 2px rgba(0,0,0,.4),0 10px 30px -14px rgba(0,0,0,.7); color-scheme:dark}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:14.5px;line-height:1.45;-webkit-font-smoothing:antialiased}
+button,input,select{font:inherit;color:inherit}
+.app{min-height:100vh;display:flex;flex-direction:column}
+.topbar{display:flex;align-items:center;gap:20px;padding-block:12px;padding-left:max(20px,env(safe-area-inset-left,0px));padding-right:max(20px,env(safe-area-inset-right,0px));border-bottom:1px solid var(--line);background:var(--rail);position:sticky;top:env(safe-area-inset-top,0px);z-index:5}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--rail)}
+.brand{display:flex;align-items:center;gap:10px;min-width:0}
+.brand svg{flex:none}
+.brand b{font-family:var(--f-display);font-weight:600;font-size:22px;letter-spacing:.005em;white-space:nowrap}
+.brand small{display:block;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin-top:-2px}
+.steps{display:flex;gap:6px;margin-left:auto;font-size:12.5px;color:var(--muted)}
+.steps span{display:flex;align-items:center;gap:6px;padding:5px 10px;border-radius:99px}
+.steps i{font-style:normal;font-family:var(--f-mono);font-size:11px;width:18px;height:18px;border-radius:50%;display:grid;place-items:center;border:1px solid var(--line-2)}
+.steps .on{color:var(--ink)}.steps .on i{background:var(--ink);color:var(--rail);border-color:var(--ink)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border-radius:10px;padding:10px 16px;font-weight:600;cursor:pointer;border:1px solid transparent;transition:transform .12s,background .15s,border-color .15s,box-shadow .15s;white-space:nowrap}
+.btn:active{transform:translateY(1px)}
+.btn.primary{background:var(--accent);color:var(--accent-ink);box-shadow:0 6px 16px -8px color-mix(in srgb,var(--accent) 70%,transparent)}
+.btn.primary:hover{filter:brightness(1.06)}
+.btn.line{background:transparent;border-color:var(--line-2);color:var(--ink)}
+.btn.line:hover{border-color:var(--ink-2)}
+.btn.small{padding:6px 10px;font-size:13px;border-radius:8px}
+.btn:disabled{opacity:.55;cursor:progress}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.demo{background:var(--accent-soft);color:var(--ink);font-size:13px;text-align:center;padding:7px 16px;border-bottom:1px solid var(--line)}
+.demo b{color:var(--accent)}
+.main{flex:1;display:grid;grid-template-columns:360px minmax(0,1fr);min-height:0}
+@media (max-width:980px){.main{grid-template-columns:minmax(0,1fr)}.steps{display:none}}
+.rail{background:var(--rail);border-right:1px solid var(--line);padding-block:18px 28px;padding-left:max(20px,env(safe-area-inset-left,0px));padding-right:20px;display:flex;flex-direction:column;gap:18px;overflow:auto}
+@media (max-width:980px){.rail{border-right:0;border-bottom:1px solid var(--line);padding-right:max(20px,env(safe-area-inset-right,0px))}}
+.drop{position:relative;border:1.5px dashed var(--line-2);border-radius:14px;padding:14px;display:flex;gap:14px;align-items:center;cursor:pointer;background:var(--card);transition:border-color .15s,background .15s}
+.drop:hover,.drop.over{border-color:var(--accent);background:var(--accent-soft)}
+.drop .thumb{width:72px;height:72px;border-radius:10px;object-fit:cover;flex:none;background:var(--stage);box-shadow:var(--shadow)}
+.drop b{display:block;font-weight:600;font-size:15px}
+.drop span{font-size:12.5px;color:var(--muted)}
+.group{display:flex;flex-direction:column;gap:12px;padding-top:16px;border-top:1px solid var(--line)}
+.group h3{margin:0;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);font-weight:600;display:flex;justify-content:space-between;align-items:center}
+.seg{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;background:var(--stage);border-radius:10px;padding:3px;gap:3px}
+.seg button{border:0;background:transparent;border-radius:8px;padding:8px 8px;cursor:pointer;font-weight:500;color:var(--ink-2)}
+.seg button[aria-pressed="true"]{background:var(--card);color:var(--ink);box-shadow:var(--shadow);font-weight:600}
+.hint{font-size:12.5px;color:var(--muted);margin:-4px 0 0}
+.field{display:flex;flex-direction:column;gap:6px}
+.field .row{display:flex;justify-content:space-between;align-items:baseline;gap:10px}
+.field label{font-weight:500}
+.field output{font-family:var(--f-mono);font-size:12.5px;color:var(--ink-2);font-variant-numeric:tabular-nums}
+input[type=range]{width:100%;accent-color:var(--accent);height:20px}
+.switch{display:flex;align-items:center;justify-content:space-between;gap:10px;font-weight:500;cursor:pointer}
+.switch input{appearance:none;width:38px;height:22px;border-radius:99px;background:var(--line-2);position:relative;cursor:pointer;transition:background .15s;flex:none}
+.switch input::after{content:"";position:absolute;top:3px;left:3px;width:16px;height:16px;border-radius:50%;background:#fff;transition:left .15s;box-shadow:0 1px 2px rgba(0,0,0,.25)}
+.switch input:checked{background:var(--accent)}.switch input:checked::after{left:19px}
+select,input[type=text]{width:100%;padding:9px 11px;border-radius:9px;border:1px solid var(--line-2);background:var(--card)}
+.fabrics{display:flex;gap:8px;flex-wrap:wrap}
+.fabrics button{width:34px;height:34px;border-radius:50%;border:2px solid var(--card);box-shadow:0 0 0 1px var(--line-2);cursor:pointer}
+.fabrics button[aria-pressed="true"]{box-shadow:0 0 0 2px var(--accent)}
+.size{display:grid;grid-template-columns:auto 1fr;gap:10px;align-items:center;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 12px}
+.size select{width:auto;padding:6px 8px}
+.size b{font-family:var(--f-mono);font-weight:500;font-size:13px;text-align:right;line-height:1.35}
+.size b small{display:block;color:var(--muted);font-weight:400;font-size:12px}
+.stage{display:flex;flex-direction:column;gap:14px;padding-block:18px 28px;padding-left:22px;padding-right:max(22px,env(safe-area-inset-right,0px));min-width:0;background:var(--bg)}
+@media (max-width:980px){.stage{padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}}
+.stagehead{display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between}
+.tabs{display:flex;gap:2px;background:var(--stage);padding:3px;border-radius:11px}
+.tabs button{border:0;background:transparent;padding:8px 14px;border-radius:8px;cursor:pointer;color:var(--ink-2);font-weight:500}
+.tabs button[aria-selected="true"]{background:var(--card);color:var(--ink);box-shadow:var(--shadow);font-weight:600}
+.stats{display:flex;flex-wrap:wrap;gap:6px 18px;font-size:12.5px;color:var(--muted)}
+.stats b{font-family:var(--f-mono);font-weight:500;color:var(--ink);font-variant-numeric:tabular-nums}
+.stats .ok{color:var(--ok)}
+.canvaswrap{background:var(--card);border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow);padding:18px;min-width:0;position:relative}
+.pv{position:relative;margin:0 auto;width:fit-content;max-width:100%;border-radius:8px;overflow:hidden;line-height:0}
+.pv canvas{display:block;max-width:100%;max-height:74vh;width:auto;height:auto}
+.pv .orig{position:absolute;inset:0;width:100%;height:100%;clip-path:inset(0 calc(100% - var(--cut,50%)) 0 0)}
+.pv .handle{position:absolute;top:0;bottom:0;left:var(--cut,50%);width:2px;background:#fff;box-shadow:0 0 0 1px rgba(0,0,0,.2);pointer-events:none}
+.pv .handle::after{content:"⟷";position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:34px;height:34px;border-radius:50%;background:#fff;color:#1f2430;display:grid;place-items:center;font-size:16px;line-height:34px;text-align:center;box-shadow:0 2px 8px rgba(0,0,0,.3)}
+.pv .tag{position:absolute;top:10px;padding:4px 9px;border-radius:99px;font-size:11px;letter-spacing:.08em;text-transform:uppercase;background:rgba(20,22,28,.7);color:#fff;line-height:1.4;pointer-events:none}
+.pv input[type=range]{position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:ew-resize;margin:0}
+.toolbar{display:flex;flex-wrap:wrap;gap:10px 16px;align-items:center;justify-content:space-between;margin-bottom:12px}
+.toolbar .seg{display:inline-grid}
+.toolbar label{display:flex;gap:8px;align-items:center;font-size:13px;color:var(--ink-2)}
+.chartbox{overflow:auto;max-height:76vh;border-radius:8px;border:1px solid var(--line);background:#fff}
+.chartbox canvas{display:block;max-width:none}
+.threads{align-items:start;display:grid;grid-template-columns:repeat(auto-fill,minmax(285px,1fr));gap:10px}
+.thread{display:grid;grid-template-columns:44px 1fr auto;gap:12px;align-items:center;padding:10px 12px;border:1px solid var(--line);border-radius:12px;background:var(--card)}
+.thread .sw{width:44px;height:44px;border-radius:10px;display:grid;place-items:center;font-size:18px;font-weight:700;font-family:"Segoe UI Symbol","DejaVu Sans",sans-serif;box-shadow:inset 0 0 0 1px rgba(0,0,0,.12)}
+.thread .meta{min-width:0}
+.thread .meta b{display:block;font-family:var(--f-mono);font-weight:500}
+.thread .meta span{display:block;font-size:12.5px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.thread .acts{display:flex;flex-direction:column;gap:4px}
+.thread .acts button{border:1px solid var(--line-2);background:transparent;border-radius:7px;padding:3px 8px;font-size:12px;cursor:pointer;color:var(--ink-2)}
+.thread .acts button:hover{border-color:var(--accent);color:var(--accent)}
+.swap{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:6px;padding-top:6px;border-top:1px dashed var(--line)}
+.swap button{display:flex;align-items:center;gap:6px;border:1px solid var(--line);background:var(--rail);border-radius:8px;padding:4px 8px 4px 4px;cursor:pointer;font-size:12px}
+.swap button i{width:20px;height:20px;border-radius:5px;display:block;box-shadow:inset 0 0 0 1px rgba(0,0,0,.12)}
+.note{font-size:12.5px;color:var(--muted);margin:10px 0 0}
+.status{font-size:12.5px;color:var(--muted);min-height:1.3em}
+.status.err{color:var(--accent)}
+dialog{border:0;border-radius:18px;padding:0;max-width:min(520px,calc(100vw - 32px));width:100%;background:var(--card);color:var(--ink);box-shadow:0 30px 80px -20px rgba(0,0,0,.45)}
+dialog::backdrop{background:rgba(15,17,22,.45);backdrop-filter:blur(3px)}
+.dlg{padding:24px;display:flex;flex-direction:column;gap:14px}
+.dlg h2{margin:0;font-family:var(--f-display);font-weight:600;font-size:26px}
+.dlg .two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.dlg .checks{display:flex;gap:18px;flex-wrap:wrap}
+.dlg .checks label{display:flex;gap:7px;align-items:center}
+.dlg .checks input{accent-color:var(--accent);width:16px;height:16px}
+.dlg .acts{display:flex;gap:10px;flex-wrap:wrap;justify-content:flex-end;margin-top:4px}
+.progress{height:4px;border-radius:99px;background:var(--stage);overflow:hidden}
+.progress i{display:block;height:100%;width:0;background:var(--accent);transition:width .2s}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+
+<div class="app">
+  <header class="topbar">
+    <div class="brand">
+      <svg width="34" height="34" viewBox="0 0 34 34" aria-hidden="true"><rect x="1" y="1" width="32" height="32" rx="9" fill="var(--accent)"/><g stroke="#fff" stroke-width="2.6" stroke-linecap="round"><path d="M9 9l7 7M16 9l-7 7M18 18l7 7M25 18l-7 7"/></g><g stroke="#fff" stroke-opacity=".55" stroke-width="2.6" stroke-linecap="round"><path d="M18 9l7 7M25 9l-7 7M9 18l7 7M16 18l-7 7"/></g></svg>
+      <div><b>Stitch Atelier</b><small>Photo to cross stitch</small></div>
+    </div>
+    <nav class="steps" aria-label="Workflow">
+      <span class="on" id="st1"><i>1</i>Upload</span><span id="st2"><i>2</i>Fine-tune</span><span id="st3"><i>3</i>Export PDF</span>
+    </nav>
+    <button class="btn primary" id="exportBtn">Export pattern</button>
+  </header>
+  <div class="demo" id="demoBar" hidden><b>Demo version.</b> Everything works; exported files carry a “demo” watermark.</div>
+
+  <div class="main">
+    <aside class="rail" aria-label="Settings">
+      <div class="drop" id="drop" tabindex="0" role="button" aria-label="Upload an image">
+        <img class="thumb" id="thumb" alt="">
+        <div><b>Drop a photo or picture</b><span>or click to browse · JPG, PNG, WEBP · paste with Ctrl+V</span></div>
+        <input type="file" id="file" accept="image/*" hidden>
+      </div>
+
+      <section class="group">
+        <h3>Image type</h3>
+        <div class="seg" role="group" aria-label="Image type"><button id="mArt" aria-pressed="true">Illustration</button><button id="mPhoto" aria-pressed="false">Photo</button></div>
+        <p class="hint" id="modeHint"></p>
+      </section>
+
+      <section class="group">
+        <h3>Size</h3>
+        <div class="field"><div class="row"><label for="w">Width in stitches</label><output id="oW"></output></div><input type="range" id="w" min="30" max="300" step="5" value="100"></div>
+        <div class="size"><select id="ct" aria-label="Fabric count"><option value="11">11 ct</option><option value="14" selected>14 ct</option><option value="16">16 ct</option><option value="18">18 ct</option><option value="28">28 ct over 2</option></select><b id="finSize"></b></div>
+      </section>
+
+      <section class="group">
+        <h3>Threads</h3>
+        <div class="field"><div class="row"><label for="c">Maximum colours</label><output id="oC"></output></div><input type="range" id="c" min="4" max="60" step="1" value="20"></div>
+        <div class="field"><div class="row"><label for="m">Minimum stitches per colour</label><output id="oM"></output></div><input type="range" id="m" min="0" max="80" step="2" value="10"></div>
+        <div class="field"><div class="row"><label for="s">Smooth blending</label><output id="oS"></output></div><input type="range" id="s" min="0" max="100" step="5" value="0"></div>
+        <p class="hint">Blending softens skin, sky and shadows with small 2×2 clusters. The pattern never gets single stray stitches.</p>
+      </section>
+
+      <section class="group">
+        <h3>Background</h3>
+        <label class="switch">Leave background unstitched<input type="checkbox" id="bg" checked></label>
+        <div class="field"><div class="row"><label for="t">Sensitivity</label><output id="oT"></output></div><input type="range" id="t" min="5" max="90" step="1" value="30"></div>
+        <p class="hint">Lower it if light areas such as a white beard or fur disappear.</p>
+      </section>
+
+      <section class="group">
+        <h3>Preview fabric</h3>
+        <div class="fabrics" role="group" aria-label="Fabric colour" id="fabrics"></div>
+      </section>
+      <p class="status" id="status" role="status"></p>
+    </aside>
+
+    <main class="stage">
+      <div class="stagehead">
+        <div class="tabs" role="tablist">
+          <button role="tab" id="tPv" aria-selected="true">Stitched preview</button>
+          <button role="tab" id="tCh" aria-selected="false">Chart</button>
+          <button role="tab" id="tLg" aria-selected="false">Threads</button>
+        </div>
+        <div class="stats" id="stats"></div>
+      </div>
+
+      <section class="canvaswrap" id="vPv">
+        <div class="toolbar"><label class="switch" style="gap:10px">Compare with original<input type="checkbox" id="cmp"></label><span class="note" style="margin:0">Rendered from the exact chart grid.</span></div>
+        <div class="pv" id="pv"><canvas id="pvCanvas"></canvas><canvas class="orig" id="origCanvas" hidden></canvas><div class="handle" id="handle" hidden></div><span class="tag" id="tagL" hidden style="left:10px">Original</span><span class="tag" id="tagR" hidden style="right:10px">Stitched</span><input type="range" id="cut" min="0" max="100" value="50" hidden aria-label="Compare slider"></div>
+      </section>
+      <section class="canvaswrap" id="vCh" hidden>
+        <div class="toolbar">
+          <div class="seg" role="group" aria-label="Chart style"><button id="chColor" aria-pressed="true">Colour</button><button id="chBw" aria-pressed="false">Black &amp; white</button></div>
+          <label>Zoom <input type="range" id="zoom" min="8" max="30" value="15" style="width:150px"></label>
+        </div>
+        <div class="chartbox"><canvas id="chCanvas"></canvas></div>
+      </section>
+      <section class="canvaswrap" id="vLg" hidden>
+        <div class="toolbar"><span style="font-weight:600">DMC thread list</span><span class="note" style="margin:0">Swap a thread for a close DMC shade or remove it. Changing a setting rebuilds the list.</span></div>
+        <div class="threads" id="threads"></div>
+      </section>
+    </main>
+  </div>
+</div>
+
+<dialog id="dlg">
+  <form class="dlg" method="dialog" id="dlgForm">
+    <h2>Export your pattern</h2>
+    <div class="field"><label for="title">Pattern title</label><input type="text" id="title" value="Winter Cat Mug" maxlength="60"></div>
+    <div class="field"><label for="designer">Designer name <span style="color:var(--muted);font-weight:400">(optional)</span></label><input type="text" id="designer" maxlength="60" placeholder="Your name"></div>
+    <div class="two">
+      <div class="field"><label for="paper">Paper</label><select id="paper"><option value="letter">US Letter</option><option value="a4">A4</option></select></div>
+      <div class="field"><label>Pages</label><div class="checks"><label><input type="checkbox" id="pgColor" checked>Colour</label><label><input type="checkbox" id="pgBw" checked>B&amp;W</label></div></div>
+    </div>
+    <div class="progress" aria-hidden="true"><i id="prog"></i></div>
+    <p class="status" id="dlgStatus" role="status"></p>
+    <div class="acts">
+      <button type="button" class="btn line" id="pngBtn">Preview image (PNG)</button>
+      <button type="button" class="btn line" id="closeBtn">Close</button>
+      <button type="button" class="btn primary" id="pdfBtn">Download PDF</button>
+    </div>
+  </form>
+</dialog>
+<script>
+"use strict";
+const IS_DEMO=true;
+const DMC_RAW="3713,FFE2E2,Salmon Very Light;761,FFC9C9,Salmon Light;760,F5ADAD,Salmon;3712,F18787,Salmon Medium;3328,E36D6D,Salmon Dark;347,BF2D2D,Salmon Very Dark;353,FED7CC,Peach;352,FD9C97,Coral Light;351,E96A67,Coral;350,E04848,Coral Medium;349,D21035,Coral Dark;817,BB051F,Coral Red Very Dark;3708,FFCBD5,Melon Light;3706,FFADBC,Melon Medium;3705,FF7992,Melon Dark;3801,E74967,Melon Very Dark;666,E31D42,Bright Red;321,C72B3B,Red;304,B71F33,Red Medium;498,A7132B,Red Dark;816,970B23,Garnet;815,87071F,Garnet Medium;814,7B001B,Garnet Dark;894,FFB2BB,Carnation Very Light;893,FC90A2,Carnation Light;892,FF798C,Carnation Medium;891,FF5773,Carnation Dark;818,FFDFD9,Baby Pink;957,FDB5B5,Geranium Pale;956,FF9191,Geranium;309,564A4A,Rose Dark;963,FFD7D7,Dusty Rose Ult Vy Lt;3716,FFBDBD,Dusty Rose Med Vy Lt;962,E68A8A,Dusty Rose Medium;961,CF7373,Dusty Rose Dark;3833,EA8699,Raspberry Light;3832,DB556E,Raspberry Medium;3831,B32F48,Raspberry Dark;777,913546,Raspberry Very Dark;819,FFEEEB,Baby Pink Light;3326,FBADB4,Rose Light;776,FCB0B9,Pink Medium;899,F27688,Rose Medium;335,EE546E,Rose;326,B33B4B,Rose Very Dark;151,F0CED4,Dusty Rose Vry Lt;3354,E4A6AC,Dusty Rose Light;3733,E8879B,Dusty Rose;3731,DA6783,Dusty Rose Very Dark;3350,BC4365,Dusty Rose Ultra Dark;150,AB0249,Dusty Rose Ult Vy Dk;3689,FBBFC2,Mauve Light;3688,E7A9AC,Mauve Medium;3687,C96B70,Mauve;3803,AB3357,Mauve Dark;3685,881531,Mauve Very Dark;605,FFC0CD,Cranberry Very Light;604,FFB0BE,Cranberry Light;603,FFA4BE,Cranberry;602,E24874,Cranberry Medium;601,D1286A,Cranberry Dark;600,CD2F63,Cranberry Very Dark;3806,FF8CAE,Cyclamen Pink Light;3805,F3478B,Cyclamen Pink;3804,E02876,Cyclamen Pink Dark;3609,F4AED5,Plum Ultra Light;3608,EA9CC4,Plum Very Light;3607,C54989,Plum Light;718,9C2462,Plum;917,9B1359,Plum Medium;915,820043,Plum Dark;225,FFDFD5,Shell Pink Ult Vy Lt;224,EBB7AF,Shell Pink Very Light;152,E2A099,Shell Pink Med Light;223,CC847C,Shell Pink Light;3722,BC6C64,Shell Pink Med;3721,A14B51,Shell Pink Dark;221,883E43,Shell Pink Vy Dk;778,DFB3BB,Antique Mauve Vy Lt;3727,DBA9B2,Antique Mauve Light;316,B7737F,Antique Mauve Med;3726,9B5B66,Antique Mauve Dark;315,814952,Antique Mauve Md Dk;3802,714149,Antique Mauve Vy Dk;902,822637,Garnet Very Dark;3743,D7CBD3,Antique Violet Vy Lt;3042,B79DA7,Antique Violet Light;3041,956F7C,Antique Violet Medium;3740,785762,Antique Violet Dark;3836,BA91AA,Grape Light;3835,946083,Grape Medium;3834,72375D,Grape Dark;154,572433,Grape Very Dark;211,E3CBE3,Lavender Light;210,C39FC3,Lavender Medium;209,A37BA7,Lavender Dark;208,835B8B,Lavender Very Dark;3837,6C3A6E,Lavender Ultra Dark;327,633666,Violet Dark;153,E6CCD9,Violet Very Light;554,DBB3CB,Violet Light;553,A3638B,Violet;552,803A6B,Violet  Medium;550,5C184E,Violet Very Dark;3747,D3D7ED,Blue Violet Vy Lt;341,B7BFDD,Blue Violet Light;156,A3AED1,Blue Violet Med Lt;340,ADA7C7,Blue Violet Medium;155,9891B6,Blue Violet Med Dark;3746,776B98,Blue Violet Dark;333,5C5478,Blue Violet Very Dark;157,BBC3D9,Cornflower Blue Vy Lt;794,8F9CC1,Cornflower Blue Light;793,707DA2,Cornflower Blue Med;3807,60678C,Cornflower Blue;792,555B7B,Cornflower Blue Dark;158,4C526E,Cornflower Blu M V D;791,464563,Cornflower Blue V D;3840,B0C0DA,Lavender Blue Light;3839,7B8EAB,Lavender Blue Med;3838,5C7294,Lavender Blue Dark;800,C0CCDE,Delft Blue Pale;809,94A8C6,Delft Blue;799,748EB6,Delft Blue Medium;798,466A8E,Delft Blue Dark;797,13477D,Royal Blue;796,11416D,Royal Blue Dark;820,0E365C,Royal Blue Very Dark;162,DBECF5,Blue Ultra Very Light;827,BDDDED,Blue Very Light;813,A1C2D7,Blue Light;826,6B9EBF,Blue Medium;825,4781A5,Blue Dark;824,396987,Blue Very Dark;996,30C2EC,Electric Blue Medium;3843,14AAD0,Electric Blue;995,2696B6,Electric Blue Dark;3846,06E3E6,Turquoise Bright Light;3845,04C4CA,Turquoise Bright Med;3844,12AEBA,Turquoise Bright Dark;159,C7CAD7,Blue Gray Light;160,999FB7,Blue Gray Medium;161,7880A4,Blue Gray;3756,EEFCFC,Baby Blue Ult Vy Lt;775,D9EBF1,Baby Blue Very Light;3841,CDDFED,Baby Blue Pale;3325,B8D2E6,Baby Blue Light;3755,93B4CE,Baby Blue;334,739FC1,Baby Blue Medium;322,5A8FB8,Baby Blue Dark;312,35668B,Baby Blue Very Dark;803,2C597C,Baby Blue Ult Vy Dk;336,253B73,Navy Blue;823,213063,Navy Blue Dark;939,1B2853,Navy Blue Very Dark;3753,DBE2E9,Antique Blue Ult Vy Lt;3752,C7D1DB,Antique Blue Very Lt;932,A2B5C6,Antique Blue Light;931,6A859E,Antique Blue Medium;930,455C71,Antique Blue Dark;3750,384C5E,Antique Blue Very Dk;828,C5E8ED,Sky Blue Vy Lt;3761,ACD8E2,Sky Blue Light;519,7EB1C8,Sky Blue;518,4F93A7,Wedgewood Light;3760,3E85A2,Wedgewood Med;517,3B768F,Wedgewood Dark;3842,32667C,Wedgewood Vry Dk;311,1C5066,Wedgewood Ult VyDk;747,E5FCFD,Peacock Blue Vy Lt;3766,99CFD9,Peacock Blue Light;807,64ABBA,Peacock Blue;806,3D95A5,Peacock Blue Dark;3765,347F8C,Peacock Blue Vy Dk;3811,BCE3E6,Turquoise Very Light;598,90C3CC,Turquoise Light;597,5BA3B3,Turquoise;3810,488E9A,Turquoise Dark;3809,3F7C85,Turquoise Vy Dark;3808,366970,Turquoise Ult Vy Dk;928,DDE3E3,Gray Green Vy Lt;927,BDCBCB,Gray Green Light;926,98AEAE,Gray Green Med;3768,657F7F,Gray Green Dark;924,566A6A,Gray Green Vy Dark;3849,52B3A4,Teal Green Light;3848,559392,Teal Green Med;3847,347D75,Teal Green Dark;964,A9E2D8,Sea Green Light;959,59C7B4,Sea Green Med;958,3EB6A1,Sea Green Dark;3812,2F8C84,Sea Green Vy Dk;3851,49B3A1,Green Bright Lt;943,3D9384,Green Bright Md;3850,378477,Green Bright Dk;993,90C0B4,Aquamarine Vy Lt;992,6FAE9F,Aquamarine Lt;3814,508B7D,Aquamarine;991,477B6E,Aquamarine Dk;966,B9D7C0,Jade Ultra Vy Lt;564,A7CDAF,Jade Very Light;563,8FC098,Jade Light;562,53976A,Jade Medium;505,338362,Jade Green;3817,99C3AA,Celadon Green Lt;3816,65A57D,Celadon Green;163,4D8361,Celadon Green Md;3815,477759,Celadon Green Dk;561,2C6A45,Celadon Green VD;504,C4DECC,Blue Green Vy Lt;3813,B2D4BD,Blue Green Lt;503,7BAC94,Blue Green Med;502,5B9071,Blue Green;501,396F52,Blue Green Dark;500,044D33,Blue Green Vy Dk;955,A2D6AD,Nile Green Light;954,88BA91,Nile Green;913,6DAB77,Nile Green Med;912,1B9D6B,Emerald Green Lt;911,189065,Emerald Green Med;910,187E56,Emerald Green Dark;909,156F49,Emerald Green Vy Dk;3818,115A3B,Emerald Grn Ult V Dk;369,D7EDCC,Pistachio Green Vy Lt;368,A6C298,Pistachio Green Lt;320,69885A,Pistachio Green Med;367,617A52,Pistachio Green Dk;319,205F2E,Pistachio Grn Vy Dk;890,174923,Pistachio Grn Ult V D;164,C8D8B8,Forest Green Lt;989,8DA675,Forest Green;988,738B5B,Forest Green Med;987,587141,Forest Green Dk;986,405230,Forest Green Vy Dk;772,E4ECD4,Yellow Green Vy Lt;3348,CCD9B1,Yellow Green Lt;3347,71935C,Yellow Green Med;3346,406A3A,Hunter Green;3345,1B5915,Hunter Green Dk;895,1B5300,Hunter Green Vy Dk;704,9ECF34,Chartreuse Bright;703,7BB547,Chartreuse;702,47A72F,Kelly Green;701,3F8F29,Green Light;700,07731B,Green Bright;699,056517,Green;907,C7E666,Parrot Green Lt;906,7FB335,Parrot Green Md;905,628A28,Parrot Green Dk;904,557822,Parrot Green V Dk;472,D8E498,Avocado Grn U Lt;471,AEBF79,Avocado Grn V Lt;470,94AB4F,Avocado Grn Lt;469,72843C,Avocado Green;937,627133,Avocado Green Md;936,4C5826,Avocado Grn V Dk;935,424D21,Avocado Green Dk;934,313919,Avocado Grn Black;523,ABB197,Fern Green Lt;3053,9CA482,Green Gray;3052,889268,Green Gray Md;3051,5F6648,Green Gray Dk;524,C4CDAC,Fern Green Vy Lt;522,969E7E,Fern Green;520,666D4F,Fern Green Dark;3364,83975F,Pine Green;3363,728256,Pine Green Md;3362,5E6B47,Pine Green Dk;165,EFF4A4,Moss Green Vy Lt;3819,E0E868,Moss Green Lt;166,C0C840,Moss Green Md Lt;581,A7AE38,Moss Green;580,888D33,Moss Green Dk;734,C7C077,Olive Green Lt;733,BCB34C,Olive Green Md;732,948C36,Olive Green;731,938B37,Olive Green Dk;730,827B30,Olive Green V Dk;3013,B9B982,Khaki Green Lt;3012,A6A75D,Khaki Green Md;3011,898A58,Khaki Green Dk;372,CCB784,Mustard Lt;371,BFA671,Mustard;370,B89D64,Mustard Medium;834,DBBE7F,Golden Olive Vy Lt;833,C8AB6C,Golden Olive Lt;832,BD9B51,Golden Olive;831,AA8F56,Golden Olive Md;830,8D784B,Golden Olive Dk;829,7E6B42,Golden Olive Vy Dk;613,DCC4AA,Drab Brown V Lt;612,BC9A78,Drab Brown Lt;611,967656,Drab Brown;610,796047,Drab Brown Dk;3047,E7D6C1,Yellow Beige Lt;3046,D8BC9A,Yellow Beige Md;3045,BC966A,Yellow Beige Dk;167,A77C49,Yellow Beige V Dk;746,FCFCEE,Off White;677,F5ECCB,Old Gold Vy Lt;422,C69F7B,Hazelnut Brown Lt;3828,B78B61,Hazelnut Brown;420,A07042,Hazelnut Brown Dk;869,835E39,Hazelnut Brown V Dk;728,E4B468,Topaz;783,CE9124,Topaz Medium;782,AE7720,Topaz Dark;781,A26D20,Topaz Very Dark;780,94631A,Topaz Ultra Vy Dk;676,E5CE97,Old Gold Lt;729,D0A53E,Old Gold Medium;680,BC8D0E,Old Gold Dark;3829,A98204,Old Gold Vy Dark;3822,F6DC98,Straw Light;3821,F3CE75,Straw;3820,DFB65F,Straw Dark;3852,CD9D37,Straw Very Dark;445,FFFB8B,Lemon Light;307,FDED54,Lemon;973,FFE300,Canary Bright;444,FFD600,Lemon Dark;3078,FDF9CD,Golden Yellow Vy Lt;727,FFF1AF,Topaz Vy Lt;726,FDD755,Topaz Light;725,FFC840,Topaz Med Lt;972,FFB515,Canary Deep;745,FFE9AD,Yellow Pale Light;744,FFE793,Yellow Pale;743,FED376,Yellow Med;742,FFBF57,Tangerine Light;741,FFA32B,Tangerine Med;740,FF8B00,Tangerine;970,F78B13,Pumpkin Light;971,F67F00,Pumpkin;947,FF7B4D,Burnt Orange;946,EB6307,Burnt Orange Med;900,D15807,Burnt Orange Dark;967,FFDED5,Apricot Very Light;3824,FECDC2,Apricot Light;3341,FCAB98,Apricot;3340,FF836F,Apricot Med;608,FD5D35,Burnt Orange Bright;606,FA3203,Orange?Red Bright;951,FFE2CF,Tawny Light;3856,FFD3B5,Mahogany Ult Vy Lt;722,F7976F,Orange Spice Light;721,F27842,Orange Spice Med;720,E55C1F,Orange Spice Dark;3825,FDBD96,Pumpkin Pale;922,E27323,Copper Light;921,C66218,Copper;920,AC5414,Copper Med;919,A64510,Red?Copper;918,82340A,Red?Copper Dark;3770,FFEEE3,Tawny Vy Light;945,FBD5BB,Tawny;402,F7A777,Mahogany Vy Lt;3776,CF7939,Mahogany Light;301,B35F2B,Mahogany Med;400,8F430F,Mahogany Dark;300,6F2F00,Mahogany Vy Dk;3823,FFFDE3,Yellow Ultra Pale;3855,FAD396,Autumn Gold Lt;3854,F2AF68,Autumn Gold Med;3853,F29746,Autumn Gold Dk;3827,F7BB77,Golden Brown Pale;977,DC9C56,Golden Brown Light;976,C28142,Golden Brown Med;3826,AD7239,Golden Brown;975,914F12,Golden Brown Dk;948,FEE7DA,Peach Very Light;754,F7CBBF,Peach Light;3771,F4BBA9,Terra Cotta Ult Vy Lt;758,EEAA9B,Terra Cotta Vy Lt;3778,D98978,Terra Cotta Light;356,C56A5B,Terra Cotta Med;3830,B95544,Terra Cotta;355,984436,Terra Cotta Dark;3777,863022,Terra Cotta Vy Dk;3779,F8CAC8,Rosewood Ult Vy Lt;3859,BA8B7C,Rosewood Light;3858,964A3F,Rosewood Med;3857,68251A,Rosewood Dark;3774,F3E1D7,Desert Sand Vy Lt;950,EED3C4,Desert Sand Light;3064,C48E70,Desert Sand;407,BB8161,Desert Sand Med;3773,B67552,Desert Sand Dark;3772,A06C50,Desert Sand Vy Dk;632,875539,Desert Sand Ult Vy Dk;453,D7CECB,Shell Gray Light;452,C0B3AE,Shell Gray Med;451,917B73,Shell Gray Dark;3861,A68881,Cocoa Light;3860,7D5D57,Cocoa;779,624B45,Cocoa Dark;712,FFFBEF,Cream;739,F8E4C8,Tan Ult Vy Lt;738,ECCC9E,Tan Very Light;437,E4BB8E,Tan Light;436,CB9051,Tan;435,B87748,Brown Very Light;434,985E33,Brown Light;433,7A451F,Brown Med;801,653919,Coffee Brown Dk;898,492A13,Coffee Brown Vy Dk;938,361F0E,Coffee Brown Ult Dk;3371,1E1108,Black Brown;543,F2E3CE,Beige Brown Ult Vy Lt;3864,CBB69C,Mocha Beige Light;3863,A4835C,Mocha Beige Med;3862,8A6E4E,Mocha Beige Dark;3031,4B3C2A,Mocha Brown Vy Dk;B5200,FFFFFF,Snow White;White,FCFBF8,White;3865,F9F7F1,Winter White;Ecru,F0EADA,Ecru;822,E7E2D3,Beige Gray Light;644,DDD8CB,Beige Gray Med;642,A49878,Beige Gray Dark;640,857B61,Beige Gray Vy Dk;3787,625D50,Brown Gray Dark;3021,4F4B41,Brown Gray Vy Dk;3024,EBEAE7,Brown Gray Vy Lt;3023,B1AA97,Brown Gray Light;3022,8E9078,Brown Gray Med;535,636458,Ash Gray Vy Lt;3033,E3D8CC,Mocha Brown Vy Lt;3782,D2BCA6,Mocha Brown Lt;3032,B39F8B,Mocha Brown Med;3790,7F6A55,Beige Gray Ult Dk;3781,6B5743,Mocha Brown Dk;3866,FAF6F0,Mocha Brn Ult Vy Lt;842,D1BAA1,Beige Brown Vy Lt;841,B69B7E,Beige Brown Lt;840,9A7C5C,Beige Brown Med;839,675541,Beige Brown Dk;838,594937,Beige Brown Vy Dk;3072,E6E8E8,Beaver Gray Vy Lt;648,BCB4AC,Beaver Gray Lt;647,B0A69C,Beaver Gray Med;646,877D73,Beaver Gray Dk;645,6E655C,Beaver Gray Vy Dk;844,484848,Beaver Gray Ult Dk;762,ECECEC,Pearl Gray Vy Lt;415,D3D3D6,Pearl Gray;318,ABABAB,Steel Gray Lt;414,8C8C8C,Steel Gray Dk;168,D1D1D1,Pewter Very Light;169,848484,Pewter Light;317,6C6C6C,Pewter Gray;413,565656,Pewter Gray Dark;3799,424242,Pewter Gray Vy Dk;310,000000,Black";
+const SAMPLE="data:image/png;base64,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";
+const SYMF="'Segoe UI Symbol','DejaVu Sans','Noto Sans Symbols 2','Apple Symbols',sans-serif";
+const SYMBOLS=Array.from("●■▲◆★♥○□△☆♣♠▼✕✚✿⬢♪☀☂✓ΩΣΨΦΞΛΠΓ#@$%&?+=×÷∞≡ЖЯЮ");
+// ---------- colour science ----------
+function srgb2lin(c){c/=255;return c<=0.04045?c/12.92:Math.pow((c+0.055)/1.055,2.4)}
+function rgb2lab(r,g,b){
+  const R=srgb2lin(r),G=srgb2lin(g),B=srgb2lin(b);
+  let x=(R*0.4124+G*0.3576+B*0.1805)/0.95047,y=R*0.2126+G*0.7152+B*0.0722,z=(R*0.0193+G*0.1192+B*0.9505)/1.08883;
+  const f=t=>t>0.008856?Math.cbrt(t):7.787*t+16/116;
+  x=f(x);y=f(y);z=f(z);return [116*y-16,500*(x-y),200*(y-z)];
+}
+function de2000(a,b){
+  const [L1,a1,b1]=a,[L2,a2,b2]=b,rad=Math.PI/180;
+  const C1=Math.hypot(a1,b1),C2=Math.hypot(a2,b2),Cm=(C1+C2)/2;
+  const G=0.5*(1-Math.sqrt(Math.pow(Cm,7)/(Math.pow(Cm,7)+Math.pow(25,7))));
+  const a1p=a1*(1+G),a2p=a2*(1+G),C1p=Math.hypot(a1p,b1),C2p=Math.hypot(a2p,b2);
+  let h1p=Math.atan2(b1,a1p)/rad;if(h1p<0)h1p+=360;let h2p=Math.atan2(b2,a2p)/rad;if(h2p<0)h2p+=360;
+  const dLp=L2-L1,dCp=C2p-C1p;let dhp=0;
+  if(C1p*C2p!==0){dhp=h2p-h1p;if(dhp>180)dhp-=360;else if(dhp<-180)dhp+=360}
+  const dHp=2*Math.sqrt(C1p*C2p)*Math.sin(dhp*rad/2);
+  const Lpm=(L1+L2)/2,Cpm=(C1p+C2p)/2;let hpm=h1p+h2p;
+  if(C1p*C2p!==0){if(Math.abs(h1p-h2p)>180)hpm+=(h1p+h2p<360)?360:-360;hpm/=2}
+  const T=1-0.17*Math.cos((hpm-30)*rad)+0.24*Math.cos(2*hpm*rad)+0.32*Math.cos((3*hpm+6)*rad)-0.20*Math.cos((4*hpm-63)*rad);
+  const dTh=30*Math.exp(-Math.pow((hpm-275)/25,2)),RC=2*Math.sqrt(Math.pow(Cpm,7)/(Math.pow(Cpm,7)+Math.pow(25,7)));
+  const SL=1+0.015*Math.pow(Lpm-50,2)/Math.sqrt(20+Math.pow(Lpm-50,2)),SC=1+0.045*Cpm,SH=1+0.015*Cpm*T,RT=-Math.sin(2*dTh*rad)*RC;
+  return Math.sqrt(Math.pow(dLp/SL,2)+Math.pow(dCp/SC,2)+Math.pow(dHp/SH,2)+RT*(dCp/SC)*(dHp/SH));
+}
+const d2=(a,b)=>(a[0]-b[0])**2+(a[1]-b[1])**2+(a[2]-b[2])**2;
+const DMC=DMC_RAW.split(";").map(s=>{const i=s.indexOf(","),j=s.indexOf(",",i+1);const hex=s.slice(i+1,j);
+  const rgb=[parseInt(hex.slice(0,2),16),parseInt(hex.slice(2,4),16),parseInt(hex.slice(4,6),16)];
+  return {code:s.slice(0,i),name:s.slice(j+1),rgb,lab:rgb2lab(...rgb)}});
+function nearestDMC(lab){let bi=0,bd=1e9;for(let i=0;i<DMC.length;i++){if(d2(lab,DMC[i].lab)>900)continue;const d=de2000(lab,DMC[i].lab);if(d<bd){bd=d;bi=i}}
+  if(bd===1e9){for(let i=0;i<DMC.length;i++){const d=de2000(lab,DMC[i].lab);if(d<bd){bd=d;bi=i}}}return bi}
+
+// ---------- state ----------
+
+// ---------- engine ----------
+function kmeans(pts,k,iters){
+  const n=pts.length;if(n===0)return[];k=Math.min(k,n);
+  let rnd=1234567;const rand=()=>((rnd=(rnd*1103515245+12345)&0x7fffffff)/0x7fffffff);
+  const C=[pts[Math.floor(rand()*n)].slice()];const dist=new Float64Array(n).fill(Infinity);
+  while(C.length<k){let sum=0;const last=C[C.length-1];
+    for(let i=0;i<n;i++){const d=d2(pts[i],last);if(d<dist[i])dist[i]=d;sum+=dist[i]}
+    if(sum===0)break;let r=rand()*sum,i=0;for(;i<n-1;i++){r-=dist[i];if(r<=0)break}C.push(pts[i].slice())}
+  const asg=new Int32Array(n);
+  for(let it=0;it<iters;it++){
+    const acc=C.map(()=>[0,0,0,0]);
+    for(let i=0;i<n;i++){let bi=0,bd=Infinity;for(let j=0;j<C.length;j++){const d=d2(pts[i],C[j]);if(d<bd){bd=d;bi=j}}asg[i]=bi;const a=acc[bi];a[0]+=pts[i][0];a[1]+=pts[i][1];a[2]+=pts[i][2];a[3]++}
+    for(let j=0;j<C.length;j++)if(acc[j][3])C[j]=[acc[j][0]/acc[j][3],acc[j][1]/acc[j][3],acc[j][2]/acc[j][3]];
+  }
+  return C;
+}
+
+function buildPattern(){
+  const img=OPT.img;if(!img)return;
+  const maxDim=1000,sc=Math.min(1,maxDim/Math.max(img.width,img.height));
+  const w0=Math.max(1,Math.round(img.width*sc)),h0=Math.max(1,Math.round(img.height*sc));
+  const cv=document.createElement("canvas");cv.width=w0;cv.height=h0;const cx=cv.getContext("2d",{willReadFrequently:true});
+  cx.drawImage(img,0,0,w0,h0);const px=cx.getImageData(0,0,w0,h0).data;
+  // background mask
+  const bg=new Uint8Array(w0*h0);
+  for(let i=0;i<w0*h0;i++)if(px[i*4+3]<128)bg[i]=1;
+  if(OPT.removeBg){
+    // Background = flat area touching the border whose colour is close to the border's typical colour.
+    // Texture check keeps light but textured areas (white beard, fur, lace) from being eaten.
+    const N=w0*h0,tol=OPT.tolerance,tol2=tol*tol,step2=(tol*0.6)**2,flat=Math.max(3,tol*0.22);
+    const lu=new Float64Array(N);for(let i=0;i<N;i++)lu[i]=0.299*px[i*4]+0.587*px[i*4+1]+0.114*px[i*4+2];
+    const W1=w0+1,I1=new Float64Array(W1*(h0+1)),I2=new Float64Array(W1*(h0+1));
+    for(let y=0;y<h0;y++){let s1=0,s2=0;for(let x=0;x<w0;x++){const v=lu[y*w0+x];s1+=v;s2+=v*v;I1[(y+1)*W1+x+1]=I1[y*W1+x+1]+s1;I2[(y+1)*W1+x+1]=I2[y*W1+x+1]+s2}}
+    const R=Math.max(2,Math.round(Math.max(w0,h0)/250));
+    const sd=i=>{const x=i%w0,y=(i/w0)|0,xa=Math.max(0,x-R),xb=Math.min(w0,x+R+1),ya=Math.max(0,y-R),yb=Math.min(h0,y+R+1),n=(xb-xa)*(yb-ya);
+      const a=I1[yb*W1+xb]-I1[ya*W1+xb]-I1[yb*W1+xa]+I1[ya*W1+xa],b=I2[yb*W1+xb]-I2[ya*W1+xb]-I2[yb*W1+xa]+I2[ya*W1+xa];return Math.sqrt(Math.max(0,b/n-(a/n)**2))};
+    const border=[];for(let x=0;x<w0;x++)border.push(x,(h0-1)*w0+x);for(let y=0;y<h0;y++)border.push(y*w0,y*w0+w0-1);
+    const med=k=>{const a=border.filter(i=>px[i*4+3]>=128).map(i=>px[i*4+k]).sort((p,q)=>p-q);return a.length?a[a.length>>1]:255};
+    const refLab=rgb2lab(med(0),med(1),med(2)),dLim=tol/7,nc=new Int8Array(N);
+    // perceptual match to the background colour (ΔE2000), so white fur on a cream background is not taken as background
+    const near=i=>{if(nc[i])return nc[i]>0;const ok=de2000(rgb2lab(px[i*4],px[i*4+1],px[i*4+2]),refLab)<=dLim;nc[i]=ok?1:-1;return ok};
+    const q=new Int32Array(N);let qh=0,qt=0;const push=i=>{if(bg[i]===2)return;bg[i]=2;q[qt++]=i};
+    const seedOk=i=>de2000(rgb2lab(px[i*4],px[i*4+1],px[i*4+2]),refLab)<=dLim*0.45;
+    for(const i of border)if(bg[i]===1||(seedOk(i)&&sd(i)<=flat*1.5))push(i);
+    while(qh<qt){const i=q[qh++],x=i%w0,y=(i/w0)|0;
+      for(const j of [x>0?i-1:-1,x<w0-1?i+1:-1,y>0?i-w0:-1,y<h0-1?i+w0:-1]){if(j<0||bg[j]===2)continue;
+        if(bg[j]===1){push(j);continue}
+        const dr=px[j*4]-px[i*4],dg=px[j*4+1]-px[i*4+1],db=px[j*4+2]-px[i*4+2];
+        if(near(j)&&dr*dr+dg*dg+db*db<=step2&&sd(j)<=flat)push(j)}}
+    for(let i=0;i<N;i++)if(bg[i]===2)bg[i]=1;
+  }
+  // crop to content
+  let x0=w0,y0=h0,x1=-1,y1=-1;
+  for(let y=0;y<h0;y++)for(let x=0;x<w0;x++)if(!bg[y*w0+x]){if(x<x0)x0=x;if(x>x1)x1=x;if(y<y0)y0=y;if(y>y1)y1=y}
+  if(x1<0){x0=0;y0=0;x1=w0-1;y1=h0-1;bg.fill(0)}
+  const cw=x1-x0+1,ch=y1-y0+1;
+  S.src={cv,x0,y0,cw,ch};
+  const W=OPT.width,H=Math.max(1,Math.round(W*ch/cw));
+  // Lab cache of source pixels (cropped)
+  const lab=new Array(cw*ch);
+  for(let y=0;y<ch;y++)for(let x=0;x<cw;x++){const i=(y+y0)*w0+(x+x0);lab[y*cw+x]=bg[i]?null:rgb2lab(px[i*4],px[i*4+1],px[i*4+2])}
+  // cell means (photo) + sample for k-means
+  const cellMean=new Array(W*H),cellBg=new Uint8Array(W*H);
+  for(let gy=0;gy<H;gy++)for(let gx=0;gx<W;gx++){
+    const sx0=Math.floor(gx*cw/W),sx1=Math.max(sx0+1,Math.floor((gx+1)*cw/W)),sy0=Math.floor(gy*ch/H),sy1=Math.max(sy0+1,Math.floor((gy+1)*ch/H));
+    let n=0,b=0,L=0,A=0,B=0;for(let y=sy0;y<sy1;y++)for(let x=sx0;x<sx1;x++){const v=lab[y*cw+x];if(!v){b++;continue}n++;L+=v[0];A+=v[1];B+=v[2]}
+    if(n<=b)cellBg[gy*W+gx]=1;else cellMean[gy*W+gx]=[L/n,A/n,B/n]}
+  const maxC=OPT.maxColors,smooth=OPT.smooth/100;
+  if(OPT.mode==="photo")bilateral(cellMean,cellBg,W,H);
+  let sample=[];
+  if(OPT.mode==="photo"){for(let i=0;i<W*H;i++)if(!cellBg[i])sample.push(cellMean[i])}
+  else{const step=Math.max(1,Math.floor(Math.sqrt(cw*ch/25000)));for(let y=0;y<ch;y+=step)for(let x=0;x<cw;x+=step){const v=lab[y*cw+x];if(v)sample.push(v)}}
+  const centers=kmeans(sample,OPT.mode==="photo"?Math.round(maxC*1.8)+6:maxC+6,OPT.mode==="photo"?14:10);
+  const candIdx=[...new Set(centers.map(nearestDMC))];
+  const cand=candIdx.map(i=>DMC[i].lab);
+  const nearestCand=v=>{let bi=0,bd=Infinity;for(let j=0;j<cand.length;j++){const d=d2(v,cand[j]);if(d<bd){bd=d;bi=j}}return bi};
+  // assign
+  let g=new Int32Array(W*H).fill(-1);
+  const blk=smooth>0?blockDither(cellMean,cellBg,W,H,nearestCand,cand,smooth):null;
+  for(let gy=0;gy<H;gy++)for(let gx=0;gx<W;gx++){const id=gy*W+gx;if(cellBg[id])continue;
+    if(blk&&blk[id]>=0){g[id]=blk[id];continue}
+    if(OPT.mode==="photo"){g[id]=nearestCand(cellMean[id]);continue}
+    const sx0=Math.floor(gx*cw/W),sx1=Math.max(sx0+1,Math.floor((gx+1)*cw/W)),sy0=Math.floor(gy*ch/H),sy1=Math.max(sy0+1,Math.floor((gy+1)*ch/H));
+    const st=Math.max(1,Math.floor((sx1-sx0)/6));const cnt=new Map();
+    for(let y=sy0;y<sy1;y+=st)for(let x=sx0;x<sx1;x+=st){const v=lab[y*cw+x];if(!v)continue;const k=nearestCand(v);cnt.set(k,(cnt.get(k)||0)+1)}
+    let bk=-1,bc=-1;for(const[k,c]of cnt)if(c>bc){bc=c;bk=k}g[id]=bk}
+  g=removeConfetti(g,W,H,OPT.mode==="photo"?3:2);
+  g=mergeRare(g,cand,OPT.minStitches,maxC);
+  g=removeConfetti(g,W,H,1);
+  // compact & order by usage
+  const counts=new Map();for(const v of g)if(v>=0)counts.set(v,(counts.get(v)||0)+1);
+  const order=[...counts.entries()].sort((a,b)=>b[1]-a[1]).map(e=>e[0]);
+  const remap=new Map(order.map((o,i)=>[o,i]));
+  const grid=new Int32Array(W*H);for(let i=0;i<g.length;i++)grid[i]=g[i]<0?-1:remap.get(g[i]);
+  S.pal=order.map((o,i)=>{const d=DMC[candIdx[o]];const n=counts.get(o);return{...d,dmcIndex:candIdx[o],count:n,skeins:Math.max(1,Math.ceil(n/1700)),symbol:SYMBOLS[i%SYMBOLS.length]}});
+  S.grid=grid;S.W=W;S.H=H;
+}
+// edge-preserving smoothing of cell colours: removes photo noise, keeps outlines
+function bilateral(m,bgm,W,H){
+  const out=new Array(W*H),R=2,ss=2*1.6*1.6,sr=2*7*7;
+  for(let y=0;y<H;y++)for(let x=0;x<W;x++){const i=y*W+x;if(bgm[i]){out[i]=m[i];continue}const c=m[i];let L=0,A=0,B=0,ws=0;
+    for(let dy=-R;dy<=R;dy++)for(let dx=-R;dx<=R;dx++){const yy=y+dy,xx=x+dx;if(yy<0||yy>=H||xx<0||xx>=W)continue;const j=yy*W+xx;if(bgm[j])continue;const v=m[j];
+      const w=Math.exp(-(dx*dx+dy*dy)/ss-d2(c,v)/sr);L+=v[0]*w;A+=v[1]*w;B+=v[2]*w;ws+=w}
+    out[i]=[L/ws,A/ws,B/ws]}
+  for(let i=0;i<W*H;i++)m[i]=out[i]}
+// soft gradients: Floyd–Steinberg on 2×2 blocks, used only where the image is smooth (no edges)
+function blockDither(m,bgm,W,H,nearest,cand,s){
+  const res=new Int32Array(W*H).fill(-1),T=6+10*s;
+  const flat=new Uint8Array(W*H);
+  for(let y=0;y<H;y++)for(let x=0;x<W;x++){const i=y*W+x;if(bgm[i])continue;let ok=true;
+    for(let dy=-1;dy<=1&&ok;dy++)for(let dx=-1;dx<=1;dx++){const yy=y+dy,xx=x+dx;if(yy<0||yy>=H||xx<0||xx>=W)continue;const j=yy*W+xx;if(bgm[j]||d2(m[i],m[j])>T*T){ok=false;break}}
+    flat[i]=ok?1:0}
+  const BW=Math.ceil(W/2),BH=Math.ceil(H/2),val=new Array(BW*BH),use=new Uint8Array(BW*BH);
+  for(let by=0;by<BH;by++)for(let bx=0;bx<BW;bx++){let L=0,A=0,B=0,n=0,all=true;
+    for(let dy=0;dy<2;dy++)for(let dx=0;dx<2;dx++){const y=by*2+dy,x=bx*2+dx;if(y>=H||x>=W)continue;const i=y*W+x;if(!flat[i]){all=false;continue}L+=m[i][0];A+=m[i][1];B+=m[i][2];n++}
+    if(all&&n){use[by*BW+bx]=1;val[by*BW+bx]=[L/n,A/n,B/n]}}
+  const err=Array.from({length:BW*BH},()=>[0,0,0]),k=0.85*s;
+  for(let by=0;by<BH;by++){const ltr=by%2===0;for(let q=0;q<BW;q++){const bx=ltr?q:BW-1-q,b=by*BW+bx;if(!use[b])continue;
+    const v=[val[b][0]+err[b][0],val[b][1]+err[b][1],val[b][2]+err[b][2]],idx=nearest(v),c=cand[idx],e=[(v[0]-c[0])*k,(v[1]-c[1])*k,(v[2]-c[2])*k];
+    const sp=(xx,yy,f)=>{if(xx<0||xx>=BW||yy>=BH)return;const t=yy*BW+xx;if(!use[t])return;err[t][0]+=e[0]*f;err[t][1]+=e[1]*f;err[t][2]+=e[2]*f};
+    const d=ltr?1:-1;sp(bx+d,by,7/16);sp(bx-d,by+1,3/16);sp(bx,by+1,5/16);sp(bx+d,by+1,1/16);
+    for(let dy=0;dy<2;dy++)for(let dx=0;dx<2;dx++){const y=by*2+dy,x=bx*2+dx;if(y<H&&x<W)res[y*W+x]=idx}}}
+  return res}
+function removeConfetti(g,W,H,passes){
+  for(let p=0;p<passes;p++){let changed=0;const n=g.slice();
+    for(let y=0;y<H;y++)for(let x=0;x<W;x++){const i=y*W+x,c=g[i];const cnt=new Map();let same=false;
+      for(let dy=-1;dy<=1;dy++)for(let dx=-1;dx<=1;dx++){if(!dx&&!dy)continue;const yy=y+dy,xx=x+dx;if(yy<0||yy>=H||xx<0||xx>=W)continue;const v=g[yy*W+xx];if(v===c){same=true;break}cnt.set(v,(cnt.get(v)||0)+1)}
+      if(!same&&cnt.size){let bk=c,bc=-1;for(const[k,v]of cnt)if(v>bc){bc=v;bk=k}n[i]=bk;changed++}}
+    g=n;if(!changed)break}
+  return g}
+function mergeRare(g,cand,minSt,maxC){
+  for(let guard=0;guard<400;guard++){
+    const cnt=new Map();for(const v of g)if(v>=0)cnt.set(v,(cnt.get(v)||0)+1);
+    const used=[...cnt.keys()];if(used.length<=1)break;
+    let rare=used.filter(k=>cnt.get(k)<minSt);
+    if(!rare.length&&used.length>maxC){
+      // drop the colour whose removal changes the picture least: few stitches × small distance to its nearest neighbour
+      let best=-1,bc=Infinity;for(const k of used){let md=Infinity;for(const o of used){if(o===k)continue;const d=de2000(cand[k],cand[o]);if(d<md)md=d}const cost=cnt.get(k)*md;if(cost<bc){bc=cost;best=k}}
+      rare=[best]}
+    if(!rare.length)break;
+    const worst=rare.reduce((a,b)=>cnt.get(a)<cnt.get(b)?a:b);
+    let bk=-1,bd=Infinity;for(const k of used){if(k===worst)continue;const d=de2000(cand[worst],cand[k]);if(d<bd){bd=d;bk=k}}
+    for(let i=0;i<g.length;i++)if(g[i]===worst)g[i]=bk}
+  return g}
+function confettiCount(){const{grid:g,W,H}=S;let n=0;
+  for(let y=0;y<H;y++)for(let x=0;x<W;x++){const c=g[y*W+x];if(c<0)continue;let s=false;
+    for(let dy=-1;dy<=1&&!s;dy++)for(let dx=-1;dx<=1;dx++){if(!dx&&!dy)continue;const yy=y+dy,xx=x+dx;if(yy>=0&&yy<H&&xx>=0&&xx<W&&g[yy*W+xx]===c){s=true;break}}
+    if(!s)n++}return n}
+
+// ---------- rendering ----------
+const shade=(rgb,f)=>`rgb(${rgb.map(c=>Math.max(0,Math.min(255,Math.round(c*f)))).join(",")})`;
+function renderStitched(canvas,cell){
+  const{grid,W,H,pal}=S;const m=cell*3;canvas.width=W*cell+2*m;canvas.height=H*cell+2*m;
+  const c=canvas.getContext("2d");const fab=S.fabric||[244,239,228];c.fillStyle=`rgb(${fab})`;c.fillRect(0,0,canvas.width,canvas.height);
+  c.fillStyle=shade(fab,0.87);for(let y=0;y<=canvas.height;y+=cell)for(let x=0;x<=canvas.width;x+=cell){c.beginPath();c.arc(x,y,Math.max(1,cell*0.09),0,7);c.fill()}
+  const lw=Math.max(1.5,cell*0.34),ins=cell*0.15;c.lineCap="round";
+  let seed=7;const r=()=>((seed=(seed*16807)%2147483647)/2147483647-0.5)*cell*0.06;
+  for(let y=0;y<H;y++)for(let x=0;x<W;x++){const v=grid[y*W+x];if(v<0)continue;const rgb=pal[v].rgb;
+    const a=m+x*cell+ins,b=m+y*cell+ins,e=m+(x+1)*cell-ins,f=m+(y+1)*cell-ins;
+    c.lineWidth=lw;c.strokeStyle=shade(fab,0.8);c.beginPath();c.moveTo(a+1,f+1);c.lineTo(e+1,b+1);c.moveTo(a+1,b+1);c.lineTo(e+1,f+1);c.stroke();
+    c.strokeStyle=shade(rgb,0.78);c.beginPath();c.moveTo(a+r(),f);c.lineTo(e,b+r());c.stroke();
+    c.strokeStyle=`rgb(${rgb})`;c.beginPath();c.moveTo(a,b+r());c.lineTo(e+r(),f);c.stroke();
+    c.lineWidth=Math.max(1,lw/3);c.strokeStyle=shade(rgb,1.13);c.beginPath();c.moveTo(a+lw*0.25,b);c.lineTo(e,f-lw*0.25);c.stroke()}
+}
+function lum(rgb){return(0.2126*rgb[0]+0.7152*rgb[1]+0.0722*rgb[2])/255}
+// draws a chart region (stitches x0..x0+tw, y0..y0+th) at given cell size onto ctx at offset
+function drawChart(c,ox,oy,cell,x0,y0,tw,th,color,font){
+  const{grid,W,pal}=S;
+  c.fillStyle="#fff";c.fillRect(ox,oy,tw*cell,th*cell);
+  c.textAlign="center";c.textBaseline="middle";c.font=`700 ${Math.round(cell*0.78)}px ${SYMF}`;
+  for(let yy=0;yy<th;yy++)for(let xx=0;xx<tw;xx++){const v=grid[(y0+yy)*W+x0+xx];if(v<0)continue;const p=pal[v];const px=ox+xx*cell,py=oy+yy*cell;
+    if(color){c.fillStyle=`rgb(${p.rgb})`;c.fillRect(px,py,cell,cell);c.fillStyle=lum(p.rgb)<0.5?"#fff":"#161616"}else c.fillStyle="#141414";
+    c.fillText(p.symbol,px+cell/2,py+cell/2+cell*0.04)}
+  for(let xx=0;xx<=tw;xx++){const bold=(x0+xx)%10===0||xx===0||xx===tw;c.strokeStyle=bold?"#262626":"#a3a3a3";c.lineWidth=bold?Math.max(1.2,cell*0.1):Math.max(0.5,cell*0.03);
+    const X=Math.round(ox+xx*cell)+0.5;c.beginPath();c.moveTo(X,oy);c.lineTo(X,oy+th*cell);c.stroke()}
+  for(let yy=0;yy<=th;yy++){const bold=(y0+yy)%10===0||yy===0||yy===th;c.strokeStyle=bold?"#262626":"#a3a3a3";c.lineWidth=bold?Math.max(1.2,cell*0.1):Math.max(0.5,cell*0.03);
+    const Y=Math.round(oy+yy*cell)+0.5;c.beginPath();c.moveTo(ox,Y);c.lineTo(ox+tw*cell,Y);c.stroke()}
+}
+// ---------- PDF: page layout on canvas + a tiny dependency-free PDF writer (JPEG pages) ----------
+const PDFX={PW:612,PH:792,M:36,SC:2.5};
+const PF="'Poppins','SA Sans','Segoe UI',Helvetica,Arial,sans-serif";
+const PFD="'Lora','SA Display',Georgia,serif";
+const INK="#1f2430",MUT="#6d7280",ACC="#a3243b";
+function pageCanvas(){const{PW,PH,SC}=PDFX;const cv=document.createElement("canvas");cv.width=Math.round(PW*SC);cv.height=Math.round(PH*SC);const c=cv.getContext("2d");c.scale(SC,SC);c.fillStyle="#fff";c.fillRect(0,0,PW,PH);return[cv,c]}
+function pHead(c,title,sub){const{M}=PDFX;c.fillStyle=ACC;c.fillRect(M,M,24,2.5);c.fillStyle=INK;c.font=`600 20px ${PFD}`;c.textAlign="left";c.textBaseline="alphabetic";c.fillText(title,M,M+26);
+  if(sub){c.font=`9px ${PF}`;c.fillStyle=MUT;c.fillText(sub,M,M+40)}}
+function pFoot(c,meta,n){const{M,PW,PH}=PDFX;c.font=`7.5px ${PF}`;c.fillStyle=MUT;c.textAlign="left";
+  c.fillText([meta.title,meta.designer?("designed by "+meta.designer):""].filter(Boolean).join("  ·  "),M,PH-20);c.textAlign="right";c.fillText(`page ${n}`,PW-M,PH-20);c.textAlign="left"}
+function pWatermark(c){if(!IS_DEMO)return;const{PW,PH}=PDFX;c.save();c.translate(PW/2,PH/2);c.rotate(-Math.PI/5);c.font=`700 64px ${PF}`;c.fillStyle="rgba(163,36,59,0.16)";c.textAlign="center";c.fillText("DEMO VERSION",0,0);c.font=`600 18px ${PF}`;c.fillText("full version: Stitch Atelier on Etsy",0,34);c.restore()}
+function chartTiles(){const{W,H}=S;const{PW,PH,M}=PDFX;const cell=9,maxC=Math.floor((PW-2*M-20)/cell),maxR=Math.floor((PH-2*M-96)/cell);
+  const nx=Math.ceil(W/maxC),ny=Math.ceil(H/maxR),cw=Math.ceil(W/nx),rh=Math.ceil(H/ny);const t=[];
+  for(let ty=0;ty<ny;ty++)for(let tx=0;tx<nx;tx++)t.push([tx*cw,ty*rh,Math.min(cw,W-tx*cw),Math.min(rh,H-ty*rh)]);return t}
+function finished(ct){return[S.W/ct,S.H/ct]}
+async function buildPDFPages(meta){
+  // meta: {title, designer, paper:"letter"|"a4", color:bool, bw:bool}
+  if(meta.paper==="a4"){PDFX.PW=595.28;PDFX.PH=841.89}else{PDFX.PW=612;PDFX.PH=792}
+  const{PW,PH,M}=PDFX;const{W,H,pal}=S;const T=chartTiles();const pages=[];let n=1;
+  const add=cv=>pages.push(cv);
+  // cover
+  {const[cv,c]=pageCanvas();
+    c.fillStyle=ACC;c.fillRect(M,M,24,2.5);c.fillStyle=MUT;c.font=`600 8px ${PF}`;c.fillText("COUNTED CROSS STITCH PATTERN",M,M+18);
+    c.fillStyle=INK;c.font=`600 30px ${PFD}`;c.fillText(meta.title,M,M+50);
+    if(meta.designer){c.font=`10px ${PF}`;c.fillStyle=MUT;c.fillText("Designed by "+meta.designer,M,M+66)}
+    const pv=document.createElement("canvas");renderStitched(pv,Math.max(6,Math.min(14,Math.floor(1700/Math.max(W,H)))));
+    const top=M+84,bw=PW-2*M,bh=PH*0.5,s=Math.min(bw/pv.width,bh/pv.height),dw=pv.width*s,dh=pv.height*s;
+    c.save();c.shadowColor="rgba(0,0,0,0.12)";c.shadowBlur=10;c.shadowOffsetY=3;c.drawImage(pv,(PW-dw)/2,top,dw,dh);c.restore();
+    let y=top+dh+34;c.fillStyle=INK;c.font=`600 13px ${PFD}`;c.fillText("Pattern details",M,y);y+=8;c.fillStyle="#e3e4e8";c.fillRect(M,y,PW-2*M,0.7);y+=16;
+    const st=S.grid.reduce((a,v)=>a+(v>=0),0);
+    const sz=ct=>{const[a,b]=finished(ct);return`${a.toFixed(1)} × ${b.toFixed(1)} in   (${(a*2.54).toFixed(1)} × ${(b*2.54).toFixed(1)} cm)`};
+    const rows=[["Stitch count",`${W} w × ${H} h   ·   ${st.toLocaleString("en-US")} full cross stitches`],["Threads",`${pal.length} DMC stranded cotton colours`],
+      ["Size on 14 ct Aida",sz(14)],["Size on 16 ct Aida",sz(16)],["Size on 18 ct Aida",sz(18)],
+      ["Chart pages",`${T.length} page${T.length>1?"s":""}${meta.color&&meta.bw?" in colour and in black & white":meta.bw?" in black & white":" in colour"}  ·  10×10 grid  ·  centre marked`],
+      ["Stitches used","Full cross stitch only, no fractional stitches"]];
+    for(const[k,v]of rows){c.font=`9.5px ${PF}`;c.fillStyle=MUT;c.fillText(k,M,y);c.fillStyle=INK;c.fillText(v,M+130,y);y+=16}
+    c.font=`7.5px ${PF}`;c.fillStyle=MUT;c.fillText("The cover image is a digital rendering of the finished stitching. Areas left blank on the chart stay as plain fabric.",M,PH-40);
+    pFoot(c,meta,n++);pWatermark(c);add(cv)}
+  // how to use
+  {const[cv,c]=pageCanvas();pHead(c,"Before you start","How to read this pattern");let y=M+72;
+    const tips=[["Find the centre","Fold your fabric in half both ways. The red arrows on the chart pages mark the centre of the design. Start stitching there."],
+      ["Read the grid","One square on the chart is one full cross stitch. Bold lines group the squares in tens, which makes counting easy."],
+      ["Match the symbols","Each symbol stands for one DMC thread. The thread key lists the code, name and how many stitches use it."],
+      ["Threads","Use 2 strands of floss on 14 and 16 count Aida, 1 or 2 strands on 18 count. Skein counts in the key are generous estimates."],
+      ["Fabric size","Add at least 3 in (8 cm) on every side of the finished size for framing or hooping."]];
+    for(const[h,t]of tips){c.fillStyle=ACC;c.beginPath();c.arc(M+5,y-3.5,3,0,7);c.fill();c.fillStyle=INK;c.font=`600 10.5px ${PF}`;c.fillText(h,M+16,y);y+=15;c.font=`9.5px ${PF}`;c.fillStyle="#3b4050";
+      y=wrapText(c,t,M+16,y,PW-2*M-16,13.5)+14}
+    pFoot(c,meta,n++);pWatermark(c);add(cv)}
+  // thread key
+  {let i=0;while(i<pal.length){const[cv,c]=pageCanvas();pHead(c,"Thread key","DMC six-strand embroidery floss");
+    const cols=[M,M+44,M+82,M+132,PW-M-110,PW-M-30];c.font=`600 7.5px ${PF}`;c.fillStyle=MUT;
+    ["COLOUR","SYMBOL","DMC","NAME","STITCHES","SKEINS"].forEach((h,k)=>c.fillText(h,cols[k],M+66));c.fillStyle="#e3e4e8";c.fillRect(M,M+72,PW-2*M,0.7);
+    let y=M+92;while(i<pal.length&&y<PH-M-36){const p=pal[i];c.fillStyle=`rgb(${p.rgb})`;c.fillRect(cols[0],y-10,28,14);c.fillRect(cols[1],y-10,14,14);c.strokeStyle="#9aa0ad";c.lineWidth=0.5;c.strokeRect(cols[0],y-10,28,14);c.strokeRect(cols[1],y-10,14,14);
+      c.fillStyle=lum(p.rgb)<0.5?"#fff":"#141414";c.font=`700 10px ${SYMF}`;c.textAlign="center";c.fillText(p.symbol,cols[1]+7,y+1);c.textAlign="left";
+      c.fillStyle=INK;c.font=`700 9.5px ${PF}`;c.fillText(p.code,cols[2],y);c.font=`9.5px ${PF}`;c.fillText(p.name,cols[3],y);c.textAlign="right";c.fillText(p.count.toLocaleString("en-US"),cols[4]+40,y);c.fillText(p.skeins,cols[5]+26,y);c.textAlign="left";
+      y+=19;if(i%2===0){}i++}
+    pFoot(c,meta,n++);pWatermark(c);add(cv)}}
+  // page map
+  if(T.length>1){const[cv,c]=pageCanvas();pHead(c,"Page map","Each numbered box is one chart page");
+    const bw=PW-2*M,bh=PH-2*M-100,s=Math.min(bw/W,bh/H),ox=(PW-W*s)/2,oy=M+64;
+    for(let y=0;y<H;y++)for(let x=0;x<W;x++){const v=S.grid[y*W+x];if(v<0)continue;c.fillStyle=`rgb(${pal[v].rgb})`;c.fillRect(ox+x*s,oy+y*s,s+0.3,s+0.3)}
+    c.strokeStyle=ACC;c.lineWidth=1.4;T.forEach(([x0,y0,tw,th],k)=>{c.strokeRect(ox+x0*s,oy+y0*s,tw*s,th*s);const mx=ox+(x0+tw/2)*s,my=oy+(y0+th/2)*s;c.fillStyle="#fff";c.beginPath();c.arc(mx,my,13,0,7);c.fill();c.fillStyle=ACC;c.font=`700 12px ${PF}`;c.textAlign="center";c.textBaseline="middle";c.fillText(k+1,mx,my);c.textBaseline="alphabetic";c.textAlign="left"});
+    pFoot(c,meta,n++);pWatermark(c);add(cv)}
+  // charts
+  const modes=[];if(meta.color)modes.push(true);if(meta.bw)modes.push(false);
+  for(const color of modes){for(let k=0;k<T.length;k++){const[x0,y0,tw,th]=T[k];const[cv,c]=pageCanvas();
+    pHead(c,`Chart ${k+1} of ${T.length}`,`${color?"Colour":"Black & white"}  ·  stitches ${x0+1}–${x0+tw} across, ${y0+1}–${y0+th} down`);
+    const cell=9,gx=M+16,gy=M+66;drawChart(c,gx,gy,cell,x0,y0,tw,th,color,PF);
+    c.fillStyle=MUT;c.font=`7px ${PF}`;c.textAlign="center";for(let x=x0;x<=x0+tw;x++)if(x%10===0&&x>0)c.fillText(x,gx+(x-x0)*cell,gy-4);
+    c.textAlign="right";c.textBaseline="middle";for(let y=y0;y<=y0+th;y++)if(y%10===0&&y>0)c.fillText(y,gx-3,gy+(y-y0)*cell);c.textBaseline="alphabetic";
+    c.fillStyle=ACC;const cX=Math.floor(W/2),cY=Math.floor(H/2);
+    if(cX>=x0&&cX<=x0+tw){const ax=gx+(cX-x0)*cell;c.beginPath();c.moveTo(ax-4,gy-14);c.lineTo(ax+4,gy-14);c.lineTo(ax,gy-8);c.fill()}
+    if(cY>=y0&&cY<=y0+th){const ay=gy+(cY-y0)*cell;c.beginPath();c.moveTo(gx-15,ay-4);c.lineTo(gx-15,ay+4);c.lineTo(gx-9,ay);c.fill()}
+    const present=new Set();for(let yy=0;yy<th;yy++)for(let xx=0;xx<tw;xx++){const v=S.grid[(y0+yy)*W+x0+xx];if(v>=0)present.add(v)}
+    let lx=gx,ly=gy+th*cell+16;c.textAlign="left";c.font=`8px ${PF}`;c.fillStyle=INK;
+    for(const v of [...present].sort((a,b)=>a-b)){const lab=`${pal[v].symbol} ${pal[v].code}`;c.font=`8px ${SYMF}`;const w=c.measureText(lab).width+12;if(lx+w>PW-M){lx=gx;ly+=11}c.fillText(lab,lx,ly);lx+=w}
+    pFoot(c,meta,n++);pWatermark(c);add(cv)}}
+  return pages;
+}
+function wrapText(c,t,x,y,maxW,lh){const words=t.split(" ");let line="";for(const w of words){const test=line?line+" "+w:w;if(c.measureText(test).width>maxW&&line){c.fillText(line,x,y);line=w;y+=lh}else line=test}if(line)c.fillText(line,x,y);return y}
+async function canvasToJpeg(cv,q){const b=await new Promise(r=>cv.toBlob(r,"image/jpeg",q));return new Uint8Array(await b.arrayBuffer())}
+async function makePDF(canvases,meta){
+  const{PW,PH}=PDFX;const enc=new TextEncoder();const chunks=[];let len=0;const offs=[];
+  const push=s=>{const b=typeof s==="string"?enc.encode(s):s;chunks.push(b);len+=b.length};
+  const esc=s=>String(s).replace(/[^\x20-\x7e]/g,"").replace(/([()\\])/g,"\\$1");
+  push(new Uint8Array([37,80,68,70,45,49,46,52,10,37,226,227,207,211,10]));
+  const n=canvases.length,size=4+3*n;
+  const obj=(id,body)=>{offs[id]=len;push(`${id} 0 obj\n`);if(Array.isArray(body))body.forEach(push);else push(body);push("\nendobj\n")};
+  obj(1,"<< /Type /Catalog /Pages 2 0 R >>");
+  obj(2,`<< /Type /Pages /Count ${n} /Kids [${canvases.map((_,i)=>`${4+3*i} 0 R`).join(" ")}] >>`);
+  obj(3,`<< /Title (${esc(meta.title)}) /Author (${esc(meta.designer||"Stitch Atelier")}) /Creator (Stitch Atelier) /Producer (Stitch Atelier) >>`);
+  for(let i=0;i<n;i++){const cv=canvases[i];const jpg=await canvasToJpeg(cv,0.86);const pid=4+3*i,cid=5+3*i,iid=6+3*i;
+    const content=`q ${PW.toFixed(2)} 0 0 ${PH.toFixed(2)} 0 0 cm /Im0 Do Q`;
+    obj(pid,`<< /Type /Page /Parent 2 0 R /MediaBox [0 0 ${PW.toFixed(2)} ${PH.toFixed(2)}] /Resources << /XObject << /Im0 ${iid} 0 R >> >> /Contents ${cid} 0 R >>`);
+    obj(cid,`<< /Length ${content.length} >>\nstream\n${content}\nendstream`);
+    obj(iid,[`<< /Type /XObject /Subtype /Image /Width ${cv.width} /Height ${cv.height} /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length ${jpg.length} >>\nstream\n`,jpg,"\nendstream"]);
+    await new Promise(r=>setTimeout(r,0))}
+  const xref=len;let x=`xref\n0 ${size}\n0000000000 65535 f \n`;for(let i=1;i<size;i++)x+=String(offs[i]).padStart(10,"0")+" 00000 n \n";
+  push(x);push(`trailer\n<< /Size ${size} /Root 1 0 R /Info 3 0 R >>\nstartxref\n${xref}\n%%EOF\n`);
+  return new Blob(chunks,{type:"application/pdf"});
+}
+
+// ---------- state & UI ----------
+const S={grid:null,W:0,H:0,pal:[],chartColor:true,fabric:[244,239,228],src:null,origImg:null};
+const OPT={img:null,mode:"art",width:100,maxColors:20,minStitches:10,smooth:0,removeBg:true,tolerance:30};
+const $=id=>document.getElementById(id);
+const FABRICS=[["Antique white",[244,239,228]],["White",[252,252,250]],["Ivory",[241,232,206]],["Sky blue",[205,222,234]],["Sage",[214,224,206]],["Black",[34,34,38]]];
+
+function readOpts(){OPT.width=+$("w").value;OPT.maxColors=+$("c").value;OPT.minStitches=+$("m").value;OPT.smooth=+$("s").value;OPT.removeBg=$("bg").checked;OPT.tolerance=+$("t").value}
+function syncOut(){$("oW").textContent=$("w").value;$("oC").textContent=$("c").value;$("oM").textContent=$("m").value;$("oT").textContent=$("t").value;
+  $("oS").textContent=$("s").value==="0"?"off":$("s").value+"%";$("t").disabled=!$("bg").checked;updateSize()}
+function updateSize(){if(!S.W){$("finSize").textContent="";return}const ct=+$("ct").value,f=ct===28?14:ct;
+  $("finSize").innerHTML=`${(S.W/f*2.54).toFixed(1)} × ${(S.H/f*2.54).toFixed(1)} cm<small>${(S.W/f).toFixed(1)} × ${(S.H/f).toFixed(1)} in finished</small>`}
+function status(t,err){const s=$("status");s.textContent=t;s.className="status"+(err?" err":"")}
+
+let timer=0;
+function schedule(){clearTimeout(timer);status("Updating…");timer=setTimeout(run,160)}
+function run(){if(!OPT.img)return;readOpts();try{const t0=performance.now();buildPattern();renderAll();status(`Pattern ready in ${((performance.now()-t0)/1000).toFixed(1)} s`);step(2)}
+  catch(e){console.error(e);status("This image could not be processed. Try another file.",true)}}
+function step(n){["st1","st2","st3"].forEach((id,i)=>$(id).classList.toggle("on",i<n))}
+
+function recompact(){const counts=new Map();for(const v of S.grid)if(v>=0)counts.set(v,(counts.get(v)||0)+1);
+  const order=[...counts.entries()].sort((a,b)=>b[1]-a[1]).map(e=>e[0]);const remap=new Map(order.map((o,i)=>[o,i]));
+  for(let i=0;i<S.grid.length;i++)if(S.grid[i]>=0)S.grid[i]=remap.get(S.grid[i]);
+  S.pal=order.map((o,i)=>{const p=S.pal[o];const n=counts.get(o);return{...p,count:n,skeins:Math.max(1,Math.ceil(n/1700)),symbol:SYMBOLS[i%SYMBOLS.length]}})}
+
+function renderAll(){const cell=Math.max(4,Math.min(16,Math.floor(1500/Math.max(S.W,S.H))));
+  renderStitched($("pvCanvas"),cell);renderOrig(cell);renderThreads();renderStats();updateSize();if(!$("vCh").hidden)renderChartView()}
+function renderOrig(cell){const o=$("origCanvas"),pv=$("pvCanvas");o.width=pv.width;o.height=pv.height;const c=o.getContext("2d");
+  c.fillStyle=`rgb(${S.fabric})`;c.fillRect(0,0,o.width,o.height);const m=cell*3,{cv,x0,y0,cw,ch}=S.src;
+  c.imageSmoothingQuality="high";c.drawImage(cv,x0,y0,cw,ch,m,m,S.W*cell,S.H*cell)}
+function renderStats(){const st=S.grid.reduce((a,v)=>a+(v>=0),0),cf=confettiCount();
+  const items=[["Grid",`${S.W}×${S.H}`],["Threads",S.pal.length],["Stitches",st.toLocaleString("en-US")],["Single stitches",cf,cf===0]];
+  $("stats").replaceChildren(...items.map(([k,v,ok])=>{const s=document.createElement("span");s.append(k+" ");const b=document.createElement("b");b.textContent=v;if(ok)b.className="ok";s.append(b);return s}))}
+function renderChartView(){const cell=+$("zoom").value,{W,H}=S,pad=cell*2.6;const cv=$("chCanvas");cv.width=W*cell+pad*2;cv.height=H*cell+pad*2;
+  const c=cv.getContext("2d");c.fillStyle="#fff";c.fillRect(0,0,cv.width,cv.height);drawChart(c,pad,pad,cell,0,0,W,H,S.chartColor,"'SA Sans',sans-serif");
+  c.fillStyle="#6d7280";c.font=`${Math.round(cell*0.6)}px ui-monospace,Menlo,Consolas,monospace`;c.textAlign="center";c.textBaseline="alphabetic";
+  for(let x=10;x<=W;x+=10)c.fillText(x,pad+x*cell,pad-cell*0.5);c.textAlign="right";c.textBaseline="middle";for(let y=10;y<=H;y+=10)c.fillText(y,pad-cell*0.4,pad+y*cell);
+  c.fillStyle="#a3243b";const cx=pad+Math.floor(W/2)*cell,cy=pad+Math.floor(H/2)*cell;
+  c.beginPath();c.moveTo(cx-cell*.5,pad-cell*1.7);c.lineTo(cx+cell*.5,pad-cell*1.7);c.lineTo(cx,pad-cell);c.fill();
+  c.beginPath();c.moveTo(pad-cell*2,cy-cell*.5);c.lineTo(pad-cell*2,cy+cell*.5);c.lineTo(pad-cell*1.3,cy);c.fill()}
+function renderThreads(){const box=$("threads");box.replaceChildren();
+  S.pal.forEach((p,i)=>{const d=document.createElement("div");d.className="thread";
+    const sw=document.createElement("div");sw.className="sw";sw.style.background=`rgb(${p.rgb})`;sw.style.color=lum(p.rgb)<0.5?"#fff":"#141414";sw.textContent=p.symbol;
+    const meta=document.createElement("div");meta.className="meta";const b=document.createElement("b");b.textContent="DMC "+p.code;const n=document.createElement("span");n.textContent=p.name;const c=document.createElement("span");c.textContent=`${p.count.toLocaleString("en-US")} stitches · ${p.skeins} skein${p.skeins>1?"s":""}`;meta.append(b,n,c);
+    const acts=document.createElement("div");acts.className="acts";const sb=document.createElement("button");sb.textContent="Swap";const rb=document.createElement("button");rb.textContent="Remove";acts.append(sb,rb);
+    d.append(sw,meta,acts);box.append(d);
+    sb.onclick=()=>{const ex=d.querySelector(".swap");if(ex){ex.remove();return}const used=new Set(S.pal.map(q=>q.dmcIndex));
+      const alts=DMC.map((x,j)=>[j,de2000(p.lab,x.lab)]).filter(([j])=>!used.has(j)).sort((a,b)=>a[1]-b[1]).slice(0,10);
+      const sp=document.createElement("div");sp.className="swap";
+      for(const[j]of alts){const x=DMC[j];const bt=document.createElement("button");const ic=document.createElement("i");ic.style.background=`rgb(${x.rgb})`;bt.append(ic,x.code);bt.title=x.name;
+        bt.onclick=()=>{S.pal[i]={...x,dmcIndex:j,count:p.count,skeins:p.skeins,symbol:p.symbol};renderAll();status(`Swapped DMC ${p.code} for DMC ${x.code}`)};sp.append(bt)}
+      d.append(sp)};
+    rb.onclick=()=>{if(S.pal.length<2)return;let bk=-1,bd=Infinity;S.pal.forEach((q,k)=>{if(k===i)return;const dd=de2000(p.lab,q.lab);if(dd<bd){bd=dd;bk=k}});
+      for(let g=0;g<S.grid.length;g++)if(S.grid[g]===i)S.grid[g]=bk;recompact();renderAll();status(`Removed DMC ${p.code}; its stitches now use the closest thread`)}})}
+
+function loadFile(file){if(!file||!file.type||!file.type.startsWith("image/")){status("Please choose an image file: JPG, PNG or WEBP.",true);return}
+  const url=URL.createObjectURL(file);const im=new Image();
+  im.onload=()=>{OPT.img=im;$("thumb").src=url;const base=file.name.replace(/\.[^.]+$/,"").replace(/[_-]+/g," ").trim();if(base&&base!=="image")$("title").value=titleCase(base).slice(0,60);
+    setMode(/jpe?g|heic|webp/i.test(file.type)?"photo":"art",true);run()};
+  im.onerror=()=>status("This file could not be opened. Save it as PNG or JPG and try again.",true);im.src=url}
+const titleCase=s=>s.replace(/\b\w/g,m=>m.toUpperCase());
+// a plain studio-style background (most border pixels share one colour) is left unstitched by default
+function plainBorder(img){if(!img)return false;const n=64,cv=document.createElement("canvas");cv.width=n;cv.height=n;const c=cv.getContext("2d",{willReadFrequently:true});c.drawImage(img,0,0,n,n);const d=c.getImageData(0,0,n,n).data;
+  const px=[];for(let i=0;i<n;i++){px.push(i,(n-1)*n+i,i*n,i*n+n-1)}const labs=px.map(i=>rgb2lab(d[i*4],d[i*4+1],d[i*4+2]));
+  const med=k=>labs.map(l=>l[k]).sort((a,b)=>a-b)[labs.length>>1],ref=[med(0),med(1),med(2)];return labs.filter(l=>de2000(l,ref)<6).length/labs.length>0.7}
+function setMode(m,silent){OPT.mode=m;$("mArt").setAttribute("aria-pressed",m==="art");$("mPhoto").setAttribute("aria-pressed",m==="photo");
+  $("modeHint").textContent=m==="art"?"Flat artwork with clear outlines: colours stay clean and edges stay crisp.":"Photos: colours are averaged per stitch and noise is cleaned up. One clear subject on a simple background works best; try 150–220 stitches wide.";
+  if(m==="photo"){if(+$("w").value<130)$("w").value=160;$("c").value=Math.max(+$("c").value,32);$("s").value=45;$("t").value=18;$("bg").checked=plainBorder(OPT.img)}
+  else{$("s").value=0;$("t").value=30;$("bg").checked=true}
+  syncOut();if(!silent)schedule()}
+
+// wiring
+$("drop").addEventListener("click",()=>$("file").click());
+$("drop").addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();$("file").click()}});
+$("file").addEventListener("change",e=>loadFile(e.target.files[0]));
+["dragenter","dragover"].forEach(ev=>$("drop").addEventListener(ev,e=>{e.preventDefault();$("drop").classList.add("over")}));
+["dragleave","drop"].forEach(ev=>$("drop").addEventListener(ev,e=>{e.preventDefault();$("drop").classList.remove("over")}));
+$("drop").addEventListener("drop",e=>loadFile(e.dataTransfer.files[0]));
+window.addEventListener("dragover",e=>e.preventDefault());window.addEventListener("drop",e=>{e.preventDefault();if(e.dataTransfer.files[0])loadFile(e.dataTransfer.files[0])});
+document.addEventListener("paste",e=>{const f=[...(e.clipboardData?.files||[])].find(f=>f.type.startsWith("image/"));if(f)loadFile(f)});
+["w","c","m","t","s"].forEach(id=>$(id).addEventListener("input",()=>{syncOut();schedule()}));
+$("bg").addEventListener("change",()=>{syncOut();schedule()});$("ct").addEventListener("change",updateSize);
+$("mArt").onclick=()=>setMode("art");$("mPhoto").onclick=()=>setMode("photo");
+const TABS=[["tPv","vPv"],["tCh","vCh"],["tLg","vLg"]];
+TABS.forEach(([t,v])=>$(t).onclick=()=>{TABS.forEach(([t2,v2])=>{$(t2).setAttribute("aria-selected",t2===t);$(v2).hidden=t2!==t});if(v==="vCh")renderChartView()});
+$("chColor").onclick=()=>{S.chartColor=true;$("chColor").setAttribute("aria-pressed",true);$("chBw").setAttribute("aria-pressed",false);renderChartView()};
+$("chBw").onclick=()=>{S.chartColor=false;$("chColor").setAttribute("aria-pressed",false);$("chBw").setAttribute("aria-pressed",true);renderChartView()};
+$("zoom").addEventListener("input",renderChartView);
+$("cmp").addEventListener("change",()=>{const on=$("cmp").checked;["origCanvas","handle","tagL","tagR","cut"].forEach(id=>$(id).hidden=!on)});
+$("cut").addEventListener("input",()=>$("pv").style.setProperty("--cut",$("cut").value+"%"));
+FABRICS.forEach(([name,rgb],i)=>{const b=document.createElement("button");b.style.background=`rgb(${rgb})`;b.title=name;b.setAttribute("aria-label",name);b.setAttribute("aria-pressed",i===0);
+  b.onclick=()=>{S.fabric=rgb;[...$("fabrics").children].forEach(x=>x.setAttribute("aria-pressed",x===b));if(S.grid)renderAll()};$("fabrics").append(b)});
+
+// export
+let downloads=null;
+async function saveFile(name,blob){
+  if(downloads){try{await downloads.save({filename:name,data:blob});return"saved"}catch(e){return e&&e.code==="declined"?"declined":"error"}}
+  const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=name;document.body.append(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},4000);return"saved"}
+const fname=()=>($("title").value.trim()||"Cross Stitch Pattern").replace(/[^\w\- ]+/g,"").trim().replace(/\s+/g,"_")||"Pattern";
+function dstat(t,err){const s=$("dlgStatus");s.textContent=t;s.className="status"+(err?" err":"")}
+$("exportBtn").onclick=()=>{if(!S.grid)return;dstat("");$("prog").style.width="0";$("dlg").showModal()};
+$("closeBtn").onclick=()=>$("dlg").close();
+$("pdfBtn").onclick=async()=>{const meta={title:$("title").value.trim()||"Cross Stitch Pattern",designer:$("designer").value.trim(),paper:$("paper").value,color:$("pgColor").checked,bw:$("pgBw").checked};
+  if(!meta.color&&!meta.bw){dstat("Choose colour pages, black & white pages, or both.",true);return}
+  $("pdfBtn").disabled=true;dstat("Laying out pages…");$("prog").style.width="15%";
+  try{await document.fonts.ready;const pages=await buildPDFPages(meta);$("prog").style.width="55%";dstat(`Compressing ${pages.length} pages…`);
+    const blob=await makePDF(pages,meta);$("prog").style.width="100%";const r=await saveFile(fname()+"_cross_stitch_pattern.pdf",blob);
+    dstat(r==="saved"?`PDF ready: ${pages.length} pages, ${(blob.size/1048576).toFixed(1)} MB.`:r==="declined"?"Download cancelled.":"The file could not be saved here.",r==="error");if(r==="saved")step(3)}
+  catch(e){console.error(e);dstat("The PDF could not be built. Please try again.",true)}finally{$("pdfBtn").disabled=false}};
+$("pngBtn").onclick=async()=>{const cv=document.createElement("canvas");renderStitched(cv,Math.max(8,Math.min(22,Math.floor(2600/Math.max(S.W,S.H)))));
+  const blob=await new Promise(r=>cv.toBlob(r,"image/png"));const r=await saveFile(fname()+"_stitched_preview.png",blob);dstat(r==="saved"?"Preview image saved.":r==="declined"?"Download cancelled.":"The file could not be saved here.",r==="error")};
+
+// boot
+if(IS_DEMO)$("demoBar").hidden=false;
+setMode("art",true);syncOut();
+(async()=>{try{downloads=window.claude?.use?await window.claude.use("downloads"):null}catch(e){downloads=null}})();
+const im0=new Image();im0.onload=()=>{OPT.img=im0;$("thumb").src=SAMPLE;(document.fonts?document.fonts.ready:Promise.resolve()).then(run)};im0.src=SAMPLE;
+
+</script>
+</body></html>
